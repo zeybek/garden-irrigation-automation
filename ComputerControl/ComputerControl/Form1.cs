@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.IO.Ports;
+using System.Windows.Forms.VisualStyles;
 
 namespace ComputerControl
 {
@@ -34,6 +35,7 @@ namespace ComputerControl
             Role1_Control_Button.BackColor = Color.Red;
             button8.ForeColor = Color.White;
             button8.BackColor = Color.Red;
+            ArduinoStatus.AppendText("Merhaba");
         }
 
         private void button7_Click(object sender, EventArgs e)
@@ -50,6 +52,14 @@ namespace ComputerControl
                 Role1_Control_Button.ForeColor = Color.White;
                 Role1_Control_Button.BackColor = Color.Red;
             }
+        }
+
+        private void ArduinoTimer_Tick(object sender, EventArgs e)
+        {
+            String[] ArduinoValues = ArduinoPort.ReadExisting().Split(' ');
+            Temperature.Text = ArduinoValues[0].Split('.')[0] + "°C";
+            Humidity.Text = "%" + ArduinoValues[1].Split('.')[0];
+            //ArduinoStatus.AppendText("\nMerhaba");
         }
 
         private void button8_Click(object sender, EventArgs e)

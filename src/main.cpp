@@ -276,6 +276,9 @@ void setup()
   Serial.begin(9600);
   pinMode(PIN_A1, OUTPUT);
   pinMode(PIN_A2, OUTPUT);
+  delay(2000);
+  analogWrite(PIN_A1, LOW);
+  analogWrite(PIN_A2, LOW);
   // pinMode(PIN_A3, OUTPUT);
   // pinMode(PIN_A4, OUTPUT);
   // SetDateTime();
@@ -285,6 +288,7 @@ void loop()
   int chk = DHT.read11(PIN_A5);
   temperature = int(DHT.temperature);
   humidity = int(DHT.humidity);
+  Serial.println(String(DHT.temperature) + " " + String(DHT.humidity));
   ButtonListener();
   ShowMenu(currentMenu);
   RoleControl();
