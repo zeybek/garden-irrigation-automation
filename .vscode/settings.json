@@ -1,0 +1,8 @@
+{
+  "dimmer.enabled": false,
+  "files.associations": {
+    "pins_arduino.h": "c",
+    "*.cpp_backup": "cpp"
+  },
+  "cSpell.enabled": false
+}

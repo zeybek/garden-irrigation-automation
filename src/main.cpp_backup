@@ -1,0 +1,371 @@
+#include <Arduino.h>
+#include <SoftwareSerial.h>
+#include <Wire.h>
+#include <dht.h>
+#include <LiquidCrystal.h>
+#include <string.h>
+
+// SoftwareSerial GSMSerial(9, 10);
+
+dht DHT;
+#define DHT11_PIN PIN_A4
+
+LiquidCrystal lcd(8,9,4,5,6,7);
+boolean ROLE1_ACTIVE, ROLE2_ACTIVE, ROLE3_ACTIVE, ROLE4_ACTIVE = false;
+
+// ANALOG GİRİŞLER
+int ARDA0 = A0, ARDA1 = A1, ARDA2 = A2, ARDA3 = A3;
+int ARDA0VALUE = 0, ARDA1VALUE = 0, ARDA2VALUE = 0, ARDA3VALUE = 0;
+
+// ROLE ZAMANLAYICILAR
+uint64_t ROLE1_START, ROLE1_STOP = 0;
+uint64_t ROLE2_START, ROLE2_STOP = 0;
+uint64_t ROLE3_START, ROLE3_STOP = 0;
+uint64_t ROLE4_START, ROLE4_STOP = 0;
+
+// ROLE KONTROLLER
+boolean ROLE1_TASK, ROLE2_TASK, ROLE3_TASK, ROLE4_TASK = false;
+
+// ROLE DURUM SIMGELERI
+byte ROLE_DURUM_AKTIF[8] = {B11111, B11111, B11111, B11111, B11111, B11111, B11111, B11111};
+byte ROLE_DURUM_PASIF[8] = {B11111, B10001, B10001, B10001, B10001, B10001, B11111, B11111};
+
+// AKTIF MENU
+int MENU = 0;
+
+// void SendMessage()
+// {
+//   GSMSerial.println("AT+CMGF=1");
+//   delay(1000);
+//   GSMSerial.println("AT+CMGS=\"+919767800864\"r");
+//   delay(1000);
+//   GSMSerial.println("I am SMS from GSM Module");
+//   delay(100);
+//   GSMSerial.println((char)26);
+//   delay(1000);
+// }
+// void ReceiveMessage()
+// {
+//   GSMSerial.println("AT+CNMI2,2,0,0,0");
+//   delay(1000);
+// }
+void RoleAcKapa(char roleNumarasi)
+{
+  switch (roleNumarasi)
+  {
+  case '1':
+    if (ROLE1_ACTIVE)
+    {
+      lcd.clear();
+      lcd.print("ROLE 1 STOP");
+      digitalWrite(A0, LOW);
+      ROLE1_TASK = !ROLE1_TASK;
+      Serial.println(ROLE1_TASK);
+    }
+    else
+    {
+      lcd.clear();
+      lcd.print("ROLE 1 START");
+      digitalWrite(A0, HIGH);
+      ROLE1_TASK = !ROLE1_TASK;
+      Serial.println(ROLE1_TASK);
+      ROLE1_START = millis();
+    }
+    ROLE1_ACTIVE = !ROLE1_ACTIVE;
+    break;
+  case '2':
+    if (ROLE2_ACTIVE)
+    {
+      lcd.clear();
+      lcd.print("ROLE 2 STOP");
+      digitalWrite(A1, LOW);
+      ROLE2_TASK = !ROLE2_TASK;
+      Serial.println(ROLE2_TASK);
+    }
+    else
+    {
+      lcd.clear();
+      lcd.print("ROLE 2 START");
+      digitalWrite(A1, HIGH);
+      ROLE2_TASK = !ROLE2_TASK;
+      Serial.println(ROLE2_TASK);
+      ROLE2_START = millis();
+    }
+    ROLE2_ACTIVE = !ROLE2_ACTIVE;
+    break;
+  case '3':
+    if (ROLE3_ACTIVE)
+    {
+      lcd.clear();
+      lcd.print("ROLE 3 STOP");
+      digitalWrite(A2, LOW);
+      ROLE3_TASK = !ROLE3_TASK;
+      Serial.println(ROLE3_TASK);
+    }
+    else
+    {
+      lcd.clear();
+      lcd.print("ROLE 3 START");
+      digitalWrite(A2, HIGH);
+      ROLE3_TASK = !ROLE3_TASK;
+      Serial.println(ROLE3_TASK);
+      ROLE3_START = millis();
+    }
+    ROLE3_ACTIVE = !ROLE3_ACTIVE;
+    break;
+  case '4':
+    if (ROLE4_ACTIVE)
+    {
+      lcd.clear();
+      lcd.print("ROLE 4 STOP");
+      digitalWrite(A3, LOW);
+      ROLE4_TASK = !ROLE4_TASK;
+      Serial.println(ROLE4_TASK);
+    }
+    else
+    {
+      lcd.clear();
+      lcd.print("ROLE 4 START");
+      digitalWrite(A3, HIGH);
+      ROLE4_TASK = !ROLE4_TASK;
+      Serial.println(ROLE4_TASK);
+      ROLE4_START = millis();
+    }
+    ROLE4_ACTIVE = !ROLE4_ACTIVE;
+    break;
+  }
+}
+void AnaMenu()
+{
+  int chk = DHT.read11(DHT11_PIN);
+  lcd.setCursor(0, 0);
+  if (String(int(DHT.temperature)).length() > 1)
+  {
+    lcd.print("22.06.2020  ");
+  }
+  else
+  {
+    lcd.print("22.06.2020   ");
+  }
+  lcd.print(String(int(DHT.temperature)) + String((char)223) + "C");
+  lcd.setCursor(0, 1);
+  lcd.print("14:35       ");
+  // ROLE DURUM SIMGELERI
+  if (ROLE1_ACTIVE)
+  {
+    lcd.print(char(1));
+  }
+  else
+  {
+    lcd.print(char(0));
+  }
+  if (ROLE2_ACTIVE)
+  {
+    lcd.print(char(1));
+  }
+  else
+  {
+    lcd.print(char(0));
+  }
+  if (ROLE3_ACTIVE)
+  {
+    lcd.print(char(1));
+  }
+  else
+  {
+    lcd.print(char(0));
+  }
+  if (ROLE4_ACTIVE)
+  {
+    lcd.print(char(1));
+  }
+  else
+  {
+    lcd.print(char(0));
+  }
+}
+void RoleBir()
+{
+  lcd.setCursor(0, 0);
+  lcd.print("ROLE           1");
+  lcd.setCursor(0, 1);
+  ROLE1_ACTIVE ? lcd.print("AKTIF           ") : lcd.print("PASIF           ");
+}
+void RoleIki()
+{
+  lcd.setCursor(0, 0);
+  lcd.print("ROLE           2");
+  lcd.setCursor(0, 1);
+  ROLE2_ACTIVE ? lcd.print("AKTIF           ") : lcd.print("PASIF           ");
+}
+void RoleUc()
+{
+  lcd.setCursor(0, 0);
+  lcd.print("ROLE           3");
+  lcd.setCursor(0, 1);
+  ROLE3_ACTIVE ? lcd.print("AKTIF           ") : lcd.print("PASIF           ");
+}
+void RoleDort()
+{
+  lcd.setCursor(0, 0);
+  lcd.print("ROLE           4");
+  lcd.setCursor(0, 1);
+  ROLE4_ACTIVE ? lcd.print("AKTIF           ") : lcd.print("PASIF           ");
+}
+void MenuKontrol()
+{
+  int ARTIRBUTONU = digitalRead(6);
+  int AZALTBUTONU = digitalRead(7);
+
+  if (ARTIRBUTONU == HIGH)
+  {
+    digitalWrite(6, LOW);
+  }
+  if (ARTIRBUTONU == LOW)
+  {
+    if (MENU != 4)
+    {
+      MENU = MENU + 1;
+    }
+    digitalWrite(6, HIGH);
+  }
+
+  if (AZALTBUTONU == HIGH)
+  {
+    digitalWrite(7, LOW);
+  }
+  if (AZALTBUTONU == LOW)
+  {
+    if (MENU != 0)
+    {
+      MENU = MENU - 1;
+    }
+    digitalWrite(7, HIGH);
+  }
+}
+void setup()
+{
+  lcd.begin(16, 2);
+  lcd.createChar(0, ROLE_DURUM_PASIF);
+  lcd.createChar(1, ROLE_DURUM_AKTIF);
+  lcd.print("SISTEM BASLIYOR");
+  lcd.setCursor(0, 1);
+  lcd.print("LUTFEN BEKLEYIN");
+  // GSMSerial.begin(9600);
+  Serial.begin(9600);
+
+  // Simüle Amaçlı Değerler
+  ROLE1_STOP = 1000 * 40ULL;
+  ROLE2_STOP = 1000 * 25ULL;
+  ROLE3_STOP = 1000 * 59ULL;
+  ROLE4_STOP = 1000 * 12ULL;
+
+  pinMode(6, INPUT_PULLUP); // ARTIR
+  pinMode(7, INPUT_PULLUP); // AZALT
+  pinMode(8, INPUT_PULLUP); // AYARLA
+  pinMode(13, OUTPUT);
+  pinMode(PIN_A0, OUTPUT);
+  pinMode(PIN_A1, OUTPUT);
+  pinMode(PIN_A2, OUTPUT);
+  pinMode(PIN_A3, OUTPUT);
+  pinMode(A4, INPUT_PULLUP);
+  // pinMode(A5, INPUT_PULLUP);
+
+  Serial.println("Arduino Terminal");
+  // GSMSerial.println("GSM Serial Monitor");
+
+  delay(250);
+}
+void loop()
+{
+  // Serial.println(analogRead(A4));
+  MenuKontrol();
+
+  if (MENU == 0)
+  {
+    AnaMenu();
+  }
+  if (MENU == 1)
+  {
+    RoleBir();
+  }
+  if (MENU == 2)
+  {
+    RoleIki();
+  }
+  if (MENU == 3)
+  {
+    RoleUc();
+  }
+  if (MENU == 4)
+  {
+    RoleDort();
+  }
+
+  if (Serial.available() > 0)
+  {
+    switch (Serial.read())
+    {
+    // case 's':
+    //   SendMessage();
+    //   break;
+    // case 'r':
+    //   ReceiveMessage();
+    //   break;
+    case '1':
+      RoleAcKapa('1');
+      break;
+    case '2':
+      RoleAcKapa('2');
+      break;
+    case '3':
+      RoleAcKapa('3');
+      break;
+    case '4':
+      RoleAcKapa('4');
+      break;
+    }
+  }
+
+  // if (GSMSerial.available() > 0)
+  // {
+  //   Serial.write(GSMSerial.read());
+  // }
+  // if (GSMSerial.available() > 0)
+  // {
+  //   Serial.write(GSMSerial.read());
+  // }
+  // if (ROLE1_TASK)
+  {
+    if ((millis() - ROLE1_START) > ROLE1_STOP)
+    {
+      RoleAcKapa('1');
+      delay(1000);
+    }
+  }
+  if (ROLE2_TASK)
+  {
+    if ((millis() - ROLE2_START) > ROLE2_STOP)
+    {
+      RoleAcKapa('2');
+      delay(1000);
+    }
+  }
+  if (ROLE3_TASK)
+  {
+    if ((millis() - ROLE3_START) > ROLE3_STOP)
+    {
+      RoleAcKapa('3');
+      delay(1000);
+    }
+  }
+  if (ROLE4_TASK)
+  {
+    if ((millis() - ROLE4_START) > ROLE4_STOP)
+    {
+      RoleAcKapa('4');
+      delay(1000);
+    }
+  }
+  delay(150);
+}
