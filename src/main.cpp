@@ -209,7 +209,7 @@ void SerialControl()
 {
   if (Serial.available() > 0)
   {
-    switch (Serial.read())
+    switch ((char)Serial.read())
     {
     case '1':
       if (ROLE1_ACTIVE)
@@ -328,7 +328,7 @@ void setup()
   digitalWrite(PIN_A2, HIGH);
   digitalWrite(PIN_A3, HIGH);
   digitalWrite(PIN_A4, HIGH);
-  // SetDateTime();
+  // SetDateTime(6, 7, 20, 1, 51, 30, 1);
 }
 void loop()
 {
@@ -336,7 +336,7 @@ void loop()
   delay(100);
   temperature = int(DHT.temperature);
   humidity = int(DHT.humidity);
-  // Serial.println(String(temperature) + " " + String(humidity));
+  Serial.println(String(temperature) + " " + String(humidity));
   ButtonListener();
   ShowMenu(currentMenu);
   SerialControl();
