@@ -255,11 +255,19 @@ void SerialControl()
       }
       ROLE4_ACTIVE = !ROLE4_ACTIVE;
       break;
-    case 's':
-      Sleep();
+    case 'n':
+      if (!(currentMenu >= ROLE_4))
+      {
+        currentMenu++;
+        lcd.clear();
+      }
       break;
-    case 'w':
-      WakeUp();
+    case 'p':
+      if (!(currentMenu <= MAIN_MENU))
+      {
+        currentMenu--;
+        lcd.clear();
+      }
       break;
     }
   }
@@ -332,11 +340,14 @@ void setup()
 }
 void loop()
 {
-  int chk = DHT.read11(PIN_A5);
-  delay(100);
-  temperature = int(DHT.temperature);
-  humidity = int(DHT.humidity);
-  Serial.println(String(temperature) + " " + String(humidity));
+  if (currentMenu == 1000)
+  {
+    int chk = DHT.read11(PIN_A5);
+    delay(100);
+    temperature = int(DHT.temperature);
+    humidity = int(DHT.humidity);
+    Serial.println(String(temperature) + " " + String(humidity));
+  }
   ButtonListener();
   ShowMenu(currentMenu);
   SerialControl();
