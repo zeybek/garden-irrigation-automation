@@ -1,0 +1,10 @@
+C:\Users\ahmet\PlatformIOProjects\UzaktanSulama\ComputerControl\ComputerControl\bin\Debug\ComputerControl.exe.config
+C:\Users\ahmet\PlatformIOProjects\UzaktanSulama\ComputerControl\ComputerControl\bin\Debug\ComputerControl.exe
+C:\Users\ahmet\PlatformIOProjects\UzaktanSulama\ComputerControl\ComputerControl\bin\Debug\ComputerControl.pdb
+C:\Users\ahmet\PlatformIOProjects\UzaktanSulama\ComputerControl\ComputerControl\obj\Debug\ComputerControl.csprojAssemblyReference.cache
+C:\Users\ahmet\PlatformIOProjects\UzaktanSulama\ComputerControl\ComputerControl\obj\Debug\ComputerControl.Form1.resources
+C:\Users\ahmet\PlatformIOProjects\UzaktanSulama\ComputerControl\ComputerControl\obj\Debug\ComputerControl.Properties.Resources.resources
+C:\Users\ahmet\PlatformIOProjects\UzaktanSulama\ComputerControl\ComputerControl\obj\Debug\ComputerControl.csproj.GenerateResource.cache
+C:\Users\ahmet\PlatformIOProjects\UzaktanSulama\ComputerControl\ComputerControl\obj\Debug\ComputerControl.csproj.CoreCompileInputs.cache
+C:\Users\ahmet\PlatformIOProjects\UzaktanSulama\ComputerControl\ComputerControl\obj\Debug\ComputerControl.exe
+C:\Users\ahmet\PlatformIOProjects\UzaktanSulama\ComputerControl\ComputerControl\obj\Debug\ComputerControl.pdb

@@ -8,7 +8,14 @@
 #include <string.h>
 
 // Thermometer & Humidity PIN
-#define THERMO_HUM_PIN PIN_A4
+#define THERMO_HUM_PIN PIN_A5
+
+// Relay Definitions
+#define PIN_ROLE1 PIN_A1
+#define PIN_ROLE2 PIN_A2
+#define PIN_ROLE3 PIN_A3
+#define PIN_ROLE4 PIN_A4
+
 dht DHT;
 
 // Home Screen Toggle Time
@@ -30,6 +37,20 @@ int temperature, humidity = 0;
 String day, month, year, hour, minute, second, dayOfWeek;
 String currentDate, currentTime;
 uint64_t HomeScreenTimer;
+boolean ROLE1_ACTIVE, ROLE2_ACTIVE, ROLE3_ACTIVE, ROLE4_ACTIVE = false;
+
+void SetDateTime(uint8_t dayValue, uint8_t monthValue, uint8_t yearValue, uint8_t hourValue, uint8_t minuteValue, uint8_t secondsValue, uint8_t dayOfWeekValue)
+{
+  Ds1302::DateTime dt = {
+      .year = yearValue,
+      .month = monthValue,
+      .day = dayValue,
+      .hour = hourValue,
+      .minute = minuteValue,
+      .second = secondsValue,
+      .dow = dayOfWeekValue};
+  rtc.setDateTime(&dt);
+}
 
 const static char *WeekDays[] =
     {
@@ -167,6 +188,37 @@ void MainMenu()
   lcd.print(char(0));
 }
 
+void RoleControl()
+{
+  if (Serial.available() > 0)
+  {
+    switch (Serial.read())
+    {
+    case '1':
+      if (ROLE1_ACTIVE)
+      {
+        digitalWrite(A1, LOW);
+      }
+      else
+      {
+        digitalWrite(A1, HIGH);
+      }
+      ROLE1_ACTIVE = !ROLE1_ACTIVE;
+      break;
+    case '2':
+      if (ROLE2_ACTIVE)
+      {
+        digitalWrite(A2, LOW);
+      }
+      else
+      {
+        digitalWrite(A2, HIGH);
+      }
+      ROLE2_ACTIVE = !ROLE2_ACTIVE;
+      break;
+    }
+  }
+}
 void RoleOneMenu()
 {
   lcd.clear();
@@ -222,23 +274,18 @@ void setup()
   lcd.createChar(1, ROLE_DURUM_AKTIF);
   lcd.print("SISTEM BASLIYOR");
   Serial.begin(9600);
-  // Set Date & Time
-  Ds1302::DateTime dt = {
-      .year = 20,
-      .month = Ds1302::MONTH_JUL,
-      .day = 5,
-      .hour = 1,
-      .minute = 30,
-      .second = 30,
-      .dow = Ds1302::DOW_SUN};
-
-  rtc.setDateTime(&dt);
+  pinMode(PIN_A1, OUTPUT);
+  pinMode(PIN_A2, OUTPUT);
+  // pinMode(PIN_A3, OUTPUT);
+  // pinMode(PIN_A4, OUTPUT);
+  // SetDateTime();
 }
 void loop()
 {
-  int chk = DHT.read11(PIN_A4);
+  int chk = DHT.read11(PIN_A5);
   temperature = int(DHT.temperature);
   humidity = int(DHT.humidity);
   ButtonListener();
   ShowMenu(currentMenu);
+  RoleControl();
 }
