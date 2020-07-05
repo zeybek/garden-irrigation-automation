@@ -57,8 +57,8 @@ namespace ComputerControl
         private void ArduinoTimer_Tick(object sender, EventArgs e)
         {
             String[] ArduinoValues = ArduinoPort.ReadExisting().Split(' ');
-            Temperature.Text = ArduinoValues[0].Split('.')[0] + "°C";
-            Humidity.Text = "%" + ArduinoValues[1].Split('.')[0];
+            Temperature.Text = ArduinoValues[0] + "°C";
+            Humidity.Text = "%" + ArduinoValues[1];
             //ArduinoStatus.AppendText("\nMerhaba");
         }
 

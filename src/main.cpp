@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <avr/sleep.h>
 #include <EEPROM.h>
 #include <SoftwareSerial.h>
 #include <Wire.h>
@@ -39,6 +40,9 @@ String currentDate, currentTime;
 uint64_t HomeScreenTimer;
 boolean ROLE1_ACTIVE, ROLE2_ACTIVE, ROLE3_ACTIVE, ROLE4_ACTIVE = false;
 
+byte ROLE_DURUM_AKTIF[8] = {B11111, B11111, B11111, B11111, B11111, B11111, B11111, B11111};
+byte ROLE_DURUM_PASIF[8] = {B11111, B10001, B10001, B10001, B10001, B10001, B10001, B11111};
+
 void SetDateTime(uint8_t dayValue, uint8_t monthValue, uint8_t yearValue, uint8_t hourValue, uint8_t minuteValue, uint8_t secondsValue, uint8_t dayOfWeekValue)
 {
   Ds1302::DateTime dt = {
@@ -61,9 +65,21 @@ const static char *WeekDays[] =
         "CU",
         "CT",
         "PZ"};
+void Sleep()
+{
+  sleep_enable();
+  // attachInterrupt(0, WakeUp, LOW);
 
-byte ROLE_DURUM_AKTIF[8] = {B11111, B11111, B11111, B11111, B11111, B11111, B11111, B11111};
-byte ROLE_DURUM_PASIF[8] = {B11111, B10001, B10001, B10001, B10001, B10001, B10001, B11111};
+  set_sleep_mode(SLEEP_MODE_PWR_DOWN);
+  digitalWrite(LED_BUILTIN, LOW);
+  delay(1000);
+  sleep_cpu();
+}
+void WakeUp()
+{
+  sleep_disable();
+  // detachInterrupt(0);
+}
 
 void ButtonListener()
 {
@@ -72,6 +88,7 @@ void ButtonListener()
     HomeScreenTimer = millis();
   }
   buttonValue = analogRead(PIN_A0);
+  // Serial.println(buttonValue);
   delay(150);
   if (1000 < buttonValue && buttonValue < 1040)
   {
@@ -188,7 +205,7 @@ void MainMenu()
   lcd.print(char(0));
 }
 
-void RoleControl()
+void SerialControl()
 {
   if (Serial.available() > 0)
   {
@@ -197,28 +214,57 @@ void RoleControl()
     case '1':
       if (ROLE1_ACTIVE)
       {
-        digitalWrite(A1, LOW);
+        digitalWrite(A1, HIGH);
       }
       else
       {
-        digitalWrite(A1, HIGH);
+        digitalWrite(A1, LOW);
       }
       ROLE1_ACTIVE = !ROLE1_ACTIVE;
       break;
     case '2':
       if (ROLE2_ACTIVE)
       {
-        digitalWrite(A2, LOW);
+        digitalWrite(A2, HIGH);
       }
       else
       {
-        digitalWrite(A2, HIGH);
+        digitalWrite(A2, LOW);
       }
       ROLE2_ACTIVE = !ROLE2_ACTIVE;
+      break;
+    case '3':
+      if (ROLE3_ACTIVE)
+      {
+        digitalWrite(A3, HIGH);
+      }
+      else
+      {
+        digitalWrite(A3, LOW);
+      }
+      ROLE3_ACTIVE = !ROLE3_ACTIVE;
+      break;
+    case '4':
+      if (ROLE4_ACTIVE)
+      {
+        digitalWrite(A4, HIGH);
+      }
+      else
+      {
+        digitalWrite(A4, LOW);
+      }
+      ROLE4_ACTIVE = !ROLE4_ACTIVE;
+      break;
+    case 's':
+      Sleep();
+      break;
+    case 'w':
+      WakeUp();
       break;
     }
   }
 }
+
 void RoleOneMenu()
 {
   lcd.clear();
@@ -263,33 +309,35 @@ void ShowMenu(int MenuID)
     break;
   }
 }
-
 void setup()
 {
   rtc.init();
   HomeScreenTimer = millis();
   lcd.begin(16, 2);
-  lcd.noBacklight();
   lcd.createChar(0, ROLE_DURUM_PASIF);
   lcd.createChar(1, ROLE_DURUM_AKTIF);
   lcd.print("SISTEM BASLIYOR");
   Serial.begin(9600);
   pinMode(PIN_A1, OUTPUT);
   pinMode(PIN_A2, OUTPUT);
-  delay(2000);
-  analogWrite(PIN_A1, LOW);
-  analogWrite(PIN_A2, LOW);
-  // pinMode(PIN_A3, OUTPUT);
-  // pinMode(PIN_A4, OUTPUT);
+  pinMode(PIN_A3, OUTPUT);
+  pinMode(PIN_A4, OUTPUT);
+
+  // Relay Power
+  digitalWrite(PIN_A1, HIGH);
+  digitalWrite(PIN_A2, HIGH);
+  digitalWrite(PIN_A3, HIGH);
+  digitalWrite(PIN_A4, HIGH);
   // SetDateTime();
 }
 void loop()
 {
   int chk = DHT.read11(PIN_A5);
+  delay(100);
   temperature = int(DHT.temperature);
   humidity = int(DHT.humidity);
-  Serial.println(String(DHT.temperature) + " " + String(DHT.humidity));
+  // Serial.println(String(temperature) + " " + String(humidity));
   ButtonListener();
   ShowMenu(currentMenu);
-  RoleControl();
+  SerialControl();
 }
